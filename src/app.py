@@ -13,7 +13,7 @@ app.url_map.strict_slashes = False
 CORS(app)
 
 # create the jackson family object
-jackson_family = FamilyStructure("Jackson")
+jackson_family = FamilyStructure("Jackson") 
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -25,18 +25,53 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+
+
 @app.route('/members', methods=['GET'])
-def handle_hello():
+def handle_GET():
+        members = jackson_family.get_all_members()
+        response_body = {"hello": "world",
+                         "family": members}
+        return response_body, 200
 
-    # this is how you can use the Family datastructure by calling its methods
-    members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+@app.route('/members', methods=['POST'])
+def handle_POST():
+        data = request.json
+        response_body = {}
+        print(data)
+        jackson_family.add_member(data)
+        members = jackson_family.get_all_members()
+        response_body["message"] = "Add it!"
+        response_body["results"] = members
+        return response_body, 200
 
 
-    return jsonify(response_body), 200
+    
+@app.route('/members/<int:member_id>', methods=['GET', 'DELETE'])
+def handle_member(id_member):
+    response_body = {}
+    if request.method == "GET":
+        member = jackson_family.get_member(id_member)
+        if member:
+            response_body['message'] = 'Found it!'
+            response_body['results'] = member
+            return response_body, 200
+        else:
+            response_body = {'message': 'Cant be found it...',
+                             'results': []}
+        return response_body, 404
+    
+    if request.method == "DELETE":
+        member = jackson_family.delete_member(id_member)
+        if member:
+            response_body['message'] = 'Delete it!'
+            response_body['results'] = "Deleteado"
+            return response_body, 200
+        
+        response_body = {'message': 'Cant be delete it...',
+                        'results': []}
+        
+        return jsonify(response_body), 404
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
