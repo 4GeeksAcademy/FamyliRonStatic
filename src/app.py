@@ -47,31 +47,31 @@ def handle_POST():
 
 
     
-@app.route('/members/<int:member_id>', methods=['GET', 'DELETE'])
+@app.route('/members/<int:id_member>', methods=['GET'])
 def handle_member(id_member):
     response_body = {}
-    if request.method == "GET":
-        member = jackson_family.get_member(id_member)
-        if member:
+    member = jackson_family.get_member(id_member)
+    if member:
             response_body['message'] = 'Found it!'
             response_body['results'] = member
-            return response_body, 200
-        else:
+            return jsonify(response_body), 200
+    else:
             response_body = {'message': 'Cant be found it...',
                              'results': []}
-        return response_body, 404
+    return response_body, 404
     
-    if request.method == "DELETE":
-        member = jackson_family.delete_member(id_member)
-        if member:
-            response_body['message'] = 'Delete it!'
-            response_body['results'] = "Deleteado"
-            return response_body, 200
-        
+@app.route('/members/<int:id_member>', methods=["DELETE"])
+def handle_elimin(id_member):
+    response_body = {}
+    member = jackson_family.delete_member(id_member)
+    if member:
+        response_body['message'] = 'Delete it!'
+        response_body['results'] = "Deleteado"
+        return response_body, 200
+    else:
         response_body = {'message': 'Cant be delete it...',
-                        'results': []}
-        
-        return jsonify(response_body), 404
+                        'results': []} 
+    return jsonify(response_body), 404
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
